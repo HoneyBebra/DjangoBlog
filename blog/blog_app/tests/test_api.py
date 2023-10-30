@@ -23,19 +23,33 @@ class BlogAppAPITestCase(APITestCase):
             title='test_draft_post', slug='test-draft-post', author=author,
             body='test_3', publish='2023-10-25 20:08:21+10', status='DF'
         )
+
         self.url = reverse('blog_app:post_list')
+        self.url_detail_existing_post = reverse(
+            'blog_app:post_detail', args=[1, 'test-published-post-old']
+        )
+        self.url_detail_non_existent_post = reverse(
+            'blog_app:post_detail', args=[60065, 'test-non-existent-post']
+        )
+
+        # TODO: Continue testing data when response is through django rest framework. Compare data
 
     def test_get(self):
         response = self.client.get(self.url)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
-        # TODO: Continue testing data when response is through django rest framework
 
     def test_more_pages_than_there_are(self):
-        # TODO: It would be more correct to calculate the number of pages in the test and set the
-        #  number higher. Do it when response is through django rest framework
         response = self.client.get(self.url + '?page=-1')
-        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
 
     def test_page_num_not_int(self):
         response = self.client.get(self.url + '?page=Hi!')
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+
+    def test_detail_existing_post(self):
+        response = self.client.get(self.url_detail_existing_post)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
+
+    def test_detail_non_existent_post(self):
+        response = self.client.get(self.url_detail_non_existent_post)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)

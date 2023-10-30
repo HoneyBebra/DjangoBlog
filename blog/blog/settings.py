@@ -133,3 +133,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_HOST = os.getenv("SMTP_MAIL_RU_HOST")
+EMAIL_PORT = os.getenv("SMTP_MAIL_RU_PORT")
+EMAIL_USE_TLS = os.getenv("SMTP_MAIL_RU_USE_TLS")
+EMAIL_USE_SSL = os.getenv("SMTP_MAIL_RU_USE_SSL")
+EMAIL_HOST_USER = os.getenv("SMTP_MAIL_RU_USER")
+EMAIL_HOST_PASSWORD = os.getenv("SMTP_MAIL_RU_PASSWORD")

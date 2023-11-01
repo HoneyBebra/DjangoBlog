@@ -2,9 +2,10 @@ from django.http import Http404
 from django.views.generic import ListView, DetailView
 from django.shortcuts import render, get_object_or_404
 from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
 
-from .models import Post
-from .forms import EmailPostForm
+from .models import Post, Comment
+from .forms import EmailPostForm, CommentForm
 
 
 class PostListView(ListView):
@@ -14,32 +15,33 @@ class PostListView(ListView):
     template_name = 'blog/post/list.html'
 
 
-class PostDetailView(DetailView):
-    model = Post
-    template_name = 'blog/post/detail.html'
-    context_object_name = 'post'
-    queryset = Post.objects.filter(status=Post.Status.PUBLISHED)
-    slug_url_kwarg = 'slug'
+def post_detail(request, post_id, slug):
+    post = get_object_or_404(
+        Post,
+        status=Post.Status.PUBLISHED,
+        id=post_id
+    )
+    comments = post.comments.filter(active=True)
+    form = CommentForm()
 
-    def get_object(self, queryset=None):
-        post_id = self.kwargs.get('post_id')
-        slug = self.kwargs.get('slug')
-        queryset = self.get_queryset()
+    return render(
+        request,
+        'blog/post/detail.html',
+        {
+            'post': post,
+            'comments': comments,
+            'form': form
+        }
+    )
 
-        obj = queryset.filter(id=post_id, slug=slug).first()
-        if obj is None:
-            raise Http404
-        return obj
 
-
-def post_share(request, post_id, slug):
+def post_share(request, post_id):
     # TODO: convert to class
     # TODO: handle unauthorized user error
 
     post = get_object_or_404(
         Post, id=post_id,
-        status=Post.Status.PUBLISHED,
-        slug=slug
+        status=Post.Status.PUBLISHED
     )
 
     sent = False
@@ -64,5 +66,30 @@ def post_share(request, post_id, slug):
             'post': post,
             'form': form,
             'sent': sent
+        }
+    )
+
+
+@require_POST
+def post_comment(request, post_id):
+    post = get_object_or_404(
+        Post,
+        id=post_id,
+        status=Post.Status.PUBLISHED
+    )
+
+    comment = None
+    form = CommentForm(data=request.POST)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.post = post
+        comment.save()
+
+    return render(
+        request, 'blog/post/comment.html',
+        {
+            'post': post,
+            'form': form,
+            'comment': comment
         }
     )

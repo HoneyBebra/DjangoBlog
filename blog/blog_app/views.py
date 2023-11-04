@@ -1,18 +1,39 @@
-from django.http import Http404
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView
 from django.shortcuts import render, get_object_or_404
 from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
+from taggit.models import Tag
+from django.db.models import Count
 
-from .models import Post, Comment
+from .models import Post
 from .forms import EmailPostForm, CommentForm
 
 
+# TODO: convert views to classes
+
+
 class PostListView(ListView):
-    queryset = Post.published.all()
     context_object_name = 'posts'
     paginate_by = 10
     template_name = 'blog/post/list.html'
+
+    def get_queryset(self):
+        queryset = Post.published.all()
+
+        try:
+            tag_slug = self.kwargs.get('tag_slug').lower()
+            tag = get_object_or_404(Tag, slug=tag_slug)
+            queryset = queryset.filter(tags__in=[tag])
+            self.tag = tag
+        except AttributeError:
+            pass
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag'] = getattr(self, 'tag', None)
+        return context
 
 
 def post_detail(request, post_id, slug):
@@ -24,19 +45,23 @@ def post_detail(request, post_id, slug):
     comments = post.comments.filter(active=True)
     form = CommentForm()
 
+    post_tags_ids = post.tags.values_list('id', flat=True)
+    similar_posts = Post.published.filter(tags__in=post_tags_ids).exclude(id=post.id)
+    similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags', '-publish')[:4]
+
     return render(
         request,
         'blog/post/detail.html',
         {
             'post': post,
             'comments': comments,
-            'form': form
+            'form': form,
+            'similar_posts': similar_posts
         }
     )
 
 
 def post_share(request, post_id):
-    # TODO: convert to class
     # TODO: handle unauthorized user error
 
     post = get_object_or_404(

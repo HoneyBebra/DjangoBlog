@@ -24,7 +24,7 @@ class BlogAppAPITestCase(APITestCase):
             body='test_3', publish='2023-10-25 20:08:21+10', status='DF'
         )
 
-        self.url = reverse('blog_app:post_list')
+        self.url = reverse('blog:post_list')
         self.url_detail_existing_post = reverse(
             'blog_app:post_detail', args=[1, 'test-published-post-old']
         )
@@ -34,6 +34,7 @@ class BlogAppAPITestCase(APITestCase):
 
         # TODO: Continue testing data when response is through django rest framework. Compare data
         # TODO: Add share on email and comments tests
+        # TODO: Add similar posts tags
 
     def test_get(self):
         response = self.client.get(self.url)

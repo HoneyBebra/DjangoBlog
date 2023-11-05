@@ -1,3 +1,4 @@
+{% load blog_tags %}
 {% load static %}
 <!DOCTYPE html>
 <html>
@@ -9,6 +10,19 @@
   <div id="content">
     {% block content %}
     {% endblock %}
+  </div>
+  <div id="sidebar">
+    <h2>Latest posts</h2>
+    {% show_latest_posts %}
+    <h2>Most commented posts</h2>
+    {% get_most_commented_post as most_commented_post %}
+    <ul>
+      {% for post in most_commented_post %}
+      <li>
+        <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+      </li>
+      {% endfor %}
+    </ul>
   </div>
 </body>
 </html>

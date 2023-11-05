@@ -31,6 +31,13 @@ p.date {
     font-style: italic;
 }
 
+#sidebar {
+    float:right;
+    width:20%;
+    padding:10px;
+    height:100%;
+}
+
 /* pagination */
 .pagination {
     margin:40px 0;

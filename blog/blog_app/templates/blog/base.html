@@ -12,6 +12,11 @@
     {% endblock %}
   </div>
   <div id="sidebar">
+    <p>
+      <a href="{% url "blog:post_feed" %}">
+        Check my posts-feed
+      </a>
+    </p>
     <h2>Latest posts</h2>
     {% show_latest_posts %}
     <h2>Most commented posts</h2>

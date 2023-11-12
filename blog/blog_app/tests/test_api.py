@@ -35,6 +35,7 @@ class BlogAppAPITestCase(APITestCase):
         # TODO: Continue testing data when response is through django rest framework. Compare data
         # TODO: Add share on email and comments tests
         # TODO: Add similar posts tags
+        # TODO: Add other tests
 
     def test_get(self):
         response = self.client.get(self.url)
